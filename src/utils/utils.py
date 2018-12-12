@@ -28,86 +28,67 @@ class Utils(object):
     def play_game(driver):
         while driver.current_url != "https://www.chess.com/play/computer":
             driver.get('https://www.chess.com/play/computer')
-        actions = ActionChains(driver)        
-        while True:
-            flag = False
+        actions = ActionChains(driver)    
+        board = driver.find_element(By.ID, "chessboard_boardarea")
+        #style = str(board.get_attribute("style"))
+        #a = style.find("height")
+        #b = len(style)
+        #size = float(style[a+8:b-3])
+        #quad = size / 8
+        #center = quad / 2
+        while True:            
             pecas = driver.find_elements(By.CLASS_NAME, "chess_com_piece")
             print(len(pecas))
             for each in pecas:
-                try:
-                    hint = driver.find_elements(By.CLASS_NAME, 'hlite')   
-                    print("antes1")
-                    print(len(hint))                  
-                    if len(hint)>0: 
-                        driver.execute_script(""" 
-                            var hlite = document.getElementsByClassName("hlite");
-                            for (i = 0, len = hlite.length; i < len; i++) {
-                                hlite[i].parentNode.removeChild(hlite[i]);
-                            }
-                        """)
+                try:   
                     syshint = driver.find_elements(By.CLASS_NAME, 'legal-move-hint')   
-                    print("antes2")
-                    print(len(syshint))                  
-                    if len(syshint)>0: 
+                    print("antes1")
+                    before1 = len(syshint)
+                    print(before1)          
+                    if before1 > 0:
                         driver.execute_script(""" 
                             var syshint = document.getElementsByClassName("legal-move-hint");
                             for (i = 0, len = syshint.length; i < len; i++) {
                                 syshint[i].parentNode.removeChild(syshint[i]);
                             }
                         """)
-                    hint = driver.find_elements(By.CLASS_NAME, 'hlite')   
-                    print("meio1")
-                    print(len(hint))
+                        time.sleep(1)
                     syshint = driver.find_elements(By.CLASS_NAME, 'legal-move-hint')   
-                    print("meio2")
-                    print(len(syshint))
-                    actions.reset_actions()               
-                    actions.move_to_element(each)
-                    if flag:
-                        actions.click(each)
-                        actions.pause(0.1) 
-                        actions.click(each)
-                    else:
-                        actions.click(each)
-                        flag = True
-                    actions.pause(0.1)
-                    actions.perform()                     
-                    driver.execute_script(""" 
-                        var hint = document.getElementsByClassName("legal-move-hint");
-                        var tot = "transform: translate(281.125px, 346.125px);".lenght;
-                        for (i = 0, len = hint.length; i < len; i++) { 
-                            var pontero = hint[i].getAttribute("style").toString();
-                            //var pos = pontero.search("trasform");
-                            var nsty = "position: absolute; margin: 0px; padding: 0px; display: block; overflow: hidden; opacity: 1; width: 65px; height: 65px; z-index: 12;" + pontero.slice(-tot);
-                            //pontero = pontero.replace("pointer-events: none;", "display: block;");
-                            element = document.createElement('div');
-                            element.setAttribute("class", "hlite");
-                            element.setAttribute("width", "30");
-                            element.setAttribute("height", "30");
-                            element.setAttribute("style", nsty)
-                            document.getElementById("chessboard_boardarea").appendChild(element);
-                        }
-                    """)                     
-                    hint = driver.find_elements(By.CLASS_NAME, 'hlite') 
-                    print("depois")
-                    print(len(hint))                   
-                    for cada in hint:
-                        print("tenta mover")
-                        actions.reset_actions()
-                        actions.click_and_hold(each)
-                        actions.pause(0.1) 
-                        actions.move_to_element(cada)
-                        actions.pause(0.1) 
-                        actions.release(cada) 
-                        actions.pause(0.1) 
-                        actions.perform()
-                        time.sleep(0.1)
-                        syshint = driver.find_elements(By.CLASS_NAME, 'legal-move-hint')
-                        print(len(syshint))                        
-                        if len(syshint) == 0:
-                            flag = False
+                    print("antes2")
+                    before = len(syshint)
+                    print(before)
+                    actions.reset_actions()      
+                    actions.click(each)
+                    actions.perform()  
+                    time.sleep(2)
+                    syshint = driver.find_elements(By.CLASS_NAME, 'legal-move-hint')   
+                    print("meio3")
+                    clicked = len(syshint)
+                    print(clicked) 
+                    actions.reset_actions()      
+                    actions.click(each)
+                    actions.perform()
+                    if clicked > before:                                           
+                        for cada in syshint:
+                            style = str(cada.get_attribute("style"))
+                            a = style.find("transform")
+                            b = len(style)
+                            pixels = style[a+21:b-4]
+                            c = pixels.find("px")
+                            x = float(pixels[0:c])
+                            y = float(pixels[c+4:])
+                            print(x)    
+                            print(y)
+                            print("tenta mover")
+                            actions.reset_actions() 
+                            actions.click(each)            
+                            actions.move_to_element_with_offset(board,x,y)
+                            actions.click()
+                            actions.perform()                            
+                            print("############Jogou##############")
+                            time.sleep(0.3)
                             break
-                    if len(hint) > 0:
+                        print("quebra o for")
                         break
                 except WebDriverException as msg:
                     print(msg)
